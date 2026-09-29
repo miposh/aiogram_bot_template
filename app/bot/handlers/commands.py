@@ -10,14 +10,11 @@ from fluentogram import TranslatorRunner
 from taskiq import ScheduledTask
 from taskiq_redis import RedisScheduleSource
 
-from app.bot.enums.roles import UserRole
 from app.bot.filters.dialog_filters import DialogStateFilter, DialogStateGroupFilter
 from app.bot.keyboards.links_kb import get_links_kb
 from app.bot.dialogs.flows.settings.states import SettingsSG
 from app.bot.dialogs.flows.start.states import StartSG
 from app.bot.keyboards.menu_button import get_main_menu_commands
-from app.infrastructure.database.db import DB
-from app.infrastructure.database.models.user import UserModel
 from app.services.delay_service.publisher import delay_message_deletion
 from app.services.scheduler.tasks import (
     dynamic_periodic_task,
@@ -35,15 +32,8 @@ async def process_start_command(
     dialog_manager: DialogManager,
     bot: Bot,
     i18n: TranslatorRunner,
-    db: DB,
-    user_row: UserModel | None,
 ) -> None:
-    if user_row is None:
-        await db.users.add(
-            user_id=message.from_user.id,
-            language=message.from_user.language_code,
-            role=UserRole.USER,
-        )
+    # The user row is created by GetUserMiddleware on first contact.
     await bot.set_my_commands(
         commands=get_main_menu_commands(i18n=i18n),
         scope=BotCommandScopeChat(

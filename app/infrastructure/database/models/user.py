@@ -23,7 +23,10 @@ class UserModel(BaseModel):
     latitude: float | None = Field(
         None, description="Latitude coordinate of user's location"
     )
-    language: str = Field(..., description="Preferred language code (e.g., 'ru', 'en')")
+    # Nullable in the schema (see the initial migration): legacy rows may hold NULL.
+    language: str | None = Field(
+        None, description="Preferred language code (e.g., 'ru', 'en')"
+    )
     role: UserRole = Field(
         ..., description="User role within the bot (e.g., admin, user)"
     )

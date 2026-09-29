@@ -15,9 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 async def set_radio_lang_default(_, dialog_manager: DialogManager):
-    locales: list[str] = dialog_manager.middleware_data.get("bot_locales")
-    user_row: UserModel = dialog_manager.middleware_data.get("user_row")
-    item_id = str(locales.index(user_row.language) + 1)
+    locales: list[str] = dialog_manager.middleware_data["bot_locales"]
+    user_row: UserModel | None = dialog_manager.middleware_data.get("user_row")
+    language = user_row.language if user_row else None
+    if language not in locales:
+        language = dialog_manager.middleware_data["default_locale"]
+    item_id = str(locales.index(language) + 1)
     radio: ManagedRadio = dialog_manager.find("radio_lang")
 
     await radio.set_checked(item_id)
