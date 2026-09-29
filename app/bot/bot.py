@@ -143,6 +143,8 @@ async def main(project_root: Path | str, config: AppConfig):
         )
     except Exception as e:
         logger.exception(e)
+        # Re-raise so the process exits non-zero and a supervisor restarts it.
+        raise
     finally:
         await nc.close()
         logger.info("Connection to NATS closed")
