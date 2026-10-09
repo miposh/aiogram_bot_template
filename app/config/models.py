@@ -1,5 +1,5 @@
 from aiogram.enums import ParseMode
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LogsConfig(BaseModel):
@@ -32,6 +32,9 @@ class BotConfig(BaseModel):
 
 
 class PostgresConfig(BaseModel):
+    # Dynaconf parses env values as TOML: POSTGRES_PASSWORD=123456 arrives as int.
+    model_config = ConfigDict(coerce_numbers_to_str=True)
+
     name: str = Field(..., description="PostgreSQL database name.")
     host: str = Field(..., description="PostgreSQL server hostname.")
     port: int = Field(..., description="PostgreSQL server port.")
@@ -40,6 +43,8 @@ class PostgresConfig(BaseModel):
 
 
 class RedisConfig(BaseModel):
+    model_config = ConfigDict(coerce_numbers_to_str=True)
+
     host: str = Field(default="localhost", description="Redis server hostname.")
     port: int = Field(default=6379, description="Redis server port.")
     database: int = Field(default=0, description="Redis database index.")

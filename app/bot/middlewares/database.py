@@ -24,12 +24,7 @@ class DataBaseMiddleware(BaseMiddleware):
             logger.error("Database pool is not provided in middleware data.")
             raise RuntimeError("Missing db_pool in middleware context.")
 
-        async with db_pool.connection() as raw_connection:
-            try:
-                async with raw_connection.transaction():
-                    connection = PsycopgConnection(raw_connection)
-                    data["db"] = DB(connection)
-                    return await handler(event, data)
-            except Exception as e:
-                logger.exception("Transaction rolled back due to error: %s", e)
-                raise
+        # Connections are borrowed per statement (see PsycopgConnection), not
+        # held for the whole update while the handler talks to Telegram.
+        data["db"] = DB(PsycopgConnection(db_pool))
+        return await handler(event, data)

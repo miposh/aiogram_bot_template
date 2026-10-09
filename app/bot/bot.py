@@ -74,6 +74,7 @@ async def main(project_root: Path | str, config: AppConfig):
     dp.workflow_data.update(
         redis_source=redis_source,
         bot_locales=sorted(config.i18n.locales),
+        default_locale=config.i18n.default_locale,
         translator_hub=translator_hub,
         db_pool=db_pool,
     )
@@ -142,6 +143,8 @@ async def main(project_root: Path | str, config: AppConfig):
         )
     except Exception as e:
         logger.exception(e)
+        # Re-raise so the process exits non-zero and a supervisor restarts it.
+        raise
     finally:
         await nc.close()
         logger.info("Connection to NATS closed")

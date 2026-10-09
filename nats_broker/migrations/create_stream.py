@@ -26,12 +26,16 @@ async def main() -> None:
 
     stream_name = config.nats.delayed_consumer_stream
 
-    # Stream configuration
+    # Stream configuration. WORK_QUEUE deletes a message once it is acked or
+    # terminated; with LIMITS and no limits every processed message stays on
+    # disk forever. NATS cannot switch an existing stream to/from WORK_QUEUE:
+    # drain and delete the old stream before re-running this script.
     stream_config = StreamConfig(
         name=stream_name,
         subjects=[config.nats.delayed_consumer_subject],
-        retention=RetentionPolicy.LIMITS,
+        retention=RetentionPolicy.WORK_QUEUE,
         storage=StorageType.FILE,
+        max_age=30 * 24 * 60 * 60,  # safety net for messages nobody consumes
     )
 
     # Stream creation

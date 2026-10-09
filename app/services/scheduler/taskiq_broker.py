@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import quote
 
 from taskiq import TaskiqEvents, TaskiqScheduler, TaskiqState
 from taskiq.schedule_sources import LabelScheduleSource
@@ -6,14 +7,23 @@ from taskiq_nats import NatsBroker
 from taskiq_redis import RedisScheduleSource
 
 from app.config.loader import get_config
+from app.config.models import RedisConfig
 
 config = get_config()
 
+
+def build_redis_url(redis: RedisConfig) -> str:
+    """Redis URL including credentials and DB index from the app config."""
+    auth = ""
+    if redis.password:
+        user = quote(redis.username or "", safe="")
+        auth = f"{user}:{quote(redis.password, safe='')}@"
+    return f"redis://{auth}{redis.host}:{redis.port}/{redis.database}"
+
+
 broker = NatsBroker(servers=config.nats.servers, queue="taskiq_tasks")
 
-redis_source = RedisScheduleSource(
-    url=f"redis://{config.redis.host}:{config.redis.port}"
-)
+redis_source = RedisScheduleSource(url=build_redis_url(config.redis))
 
 scheduler = TaskiqScheduler(broker, [redis_source, LabelScheduleSource(broker)])
 

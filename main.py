@@ -2,7 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from app.bot import main as start_bot
+from app.bot.bot import main as start_bot
 from app.config.loader import get_config
 from app.config.models import AppConfig
 
